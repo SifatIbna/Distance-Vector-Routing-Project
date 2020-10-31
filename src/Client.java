@@ -1,4 +1,7 @@
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 //Work needed
 public class Client {
@@ -8,13 +11,62 @@ public class Client {
         /**
          * Tasks
          */
+
+        ArrayList receive = (ArrayList)networkUtility.read();
         
         /*
         1. Receive EndDevice configuration from server
+        */
+        EndDevice endDevice = (EndDevice) receive.get(0);
+//        System.out.println(endDevice.getIpAddress());
+
+        /*
         2. Receive active client list from server
+        */
+
+        Map<IPAddress,Integer> clientList = (Map)receive.get(1);
+//        System.out.println(clientList);
+
+        ArrayList<IPAddress> activeClientList = new ArrayList<>();
+        Random random = new Random();
+
+        for (Map.Entry<IPAddress, Integer> entry : clientList.entrySet()){
+
+            if (entry.getKey() != endDevice.getGateway() && entry.getValue()>0){
+                activeClientList.add(entry.getKey());
+            }
+        }
+//        System.out.println(activeClientList);
+
+        for (int i=0;i<10;i++){
+
+            String message = "Packet number "+i;
+
+            if (activeClientList.size()==0) {
+                System.out.println("No active recipient");
+                Map<String,IPAddress> sendMessage = new HashMap<>();
+                sendMessage.put(null,null);
+                networkUtility.write(sendMessage);
+                break;
+            }
+
+            IPAddress recipientIp = activeClientList.get(random.nextInt(activeClientList.size()));
+
+            System.out.println(message+" "+recipientIp);
+
+            Map<String,IPAddress> sendMessage = new HashMap<>();
+            sendMessage.put(message,recipientIp);
+            networkUtility.write(sendMessage);
+
+            Thread.sleep(200);
+            System.out.println((String)networkUtility.read());
+        }
+
+        /*
         3. for(int i=0;i<100;i++)
         4. {
         5.      Generate a random message
+
         6.      Assign a random receiver from active client list
         7.      if(i==20)
         8.      {
@@ -31,5 +83,7 @@ public class Client {
         17. }
         18. Report average number of hops and drop rate
         */
+
+
     }
 }
