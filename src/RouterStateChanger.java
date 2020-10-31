@@ -36,6 +36,9 @@ public class RouterStateChanger implements Runnable {
             }
         }
     }
+//    public void setIslocked(boolean islocked){
+//        this.;
+//    }
 
     public void revertRandomRouter() {
         /**
