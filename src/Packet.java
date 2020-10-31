@@ -49,4 +49,8 @@ public class Packet implements Serializable {
         this.destinationIP = destinationIP;
     }
 
+    public void setHopcount(int hopcount){
+        this.hopcount = hopcount;
+    }
+
 }
