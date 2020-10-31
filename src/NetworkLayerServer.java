@@ -30,6 +30,7 @@ public class NetworkLayerServer {
         //Task: Maintain an active client list
 
         ServerSocket serverSocket = null;
+
         try {
             serverSocket = new ServerSocket(4444);
         } catch (IOException ex) {
@@ -40,12 +41,14 @@ public class NetworkLayerServer {
         System.out.println("Creating router topology");
 
         readTopology();
-
+//        System.out.println(interfacetoRouterID);
+//        System.out.println(clientInterfaces);
         initRoutingTables(); //Initialize routing tables for all routers
-
+//        System.out.println("Router MAp size : "+routerMap.size());
+//        printRoutingTable();
         DVR(1); //Update routing table using distance vector routing until convergence
 //        printRoutingTable();
-        clearRoutingTable();
+//        clearRoutingTable();
 //        printRoutingTable();
         simpleDVR(1);
 //        printRoutingTable();
@@ -59,7 +62,7 @@ public class NetworkLayerServer {
                 clientCount++;
                 endDevices.add(endDevice);
                 endDeviceMap.put(endDevice.getIpAddress(),endDevice);
-                new ServerThread(new NetworkUtility(socket), endDevice);
+                new ServerThread(new NetworkUtility(socket), endDevice,clientInterfaces,stateChanger);
             } catch (IOException ex) {
                 Logger.getLogger(NetworkLayerServer.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -114,20 +117,26 @@ public class NetworkLayerServer {
 
         while(convergence){
 
-            for(Object i : routerMap.keySet()){
-                id = (Integer)i;
-                Router router = (Router)routerMap.get(id);
+            for(int i = startingRouterId;i<=routerMap.size();i++){
+//            while (true){
+//                id = (Integer)i;
+                Router router = (Router)routerMap.get(i);
                 neighbourRouter = router.getNeighborRouterIDs();
                 for (int routerId : neighbourRouter){
 
-                    if (routerId == id) continue;
+                    if (routerId == i) {
+//                        startingRouterId = (startingRouterId%routerMap.size())+1;
+                        continue;
+                    }
 
                     if (routerMap.get(routerId).getState()){
+
                         convergence = routerMap.get(routerId).sfupdateRoutingTable(router);
 
                     }
 
                 }
+
             }
         }
         lock.unlock();
@@ -163,6 +172,7 @@ public class NetworkLayerServer {
     }
 
     public static EndDevice getClientDeviceSetup() {
+
         Random random = new Random(System.currentTimeMillis());
         int r = Math.abs(random.nextInt(clientInterfaces.size()));
 
@@ -177,6 +187,7 @@ public class NetworkLayerServer {
             Integer value = entry.getValue();
 
             System.out.println();
+
             if(i == r) {
                 gateway = key;
                 ip = new IPAddress(gateway.getBytes()[0] + "." + gateway.getBytes()[1] + "." + gateway.getBytes()[2] + "." + (value+2));
@@ -189,7 +200,7 @@ public class NetworkLayerServer {
         }
 
         EndDevice device = new EndDevice(ip, gateway, endDevices.size());
-
+//        System.out.println(clientInterfaces);
         System.out.println("Device : " + ip + "::::" + gateway);
         return device;
     }
