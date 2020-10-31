@@ -24,8 +24,8 @@ public class Router {
          */
         Random random = new Random();
         double p = random.nextDouble();
-        if(p < 0.80) state = false;
-        else state = true;
+        if(p < 0.80) state = true;
+        else state = false;
 
         numberOfInterfaces = 0;
     }
