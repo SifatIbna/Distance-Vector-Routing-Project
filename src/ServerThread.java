@@ -9,15 +9,15 @@ public class ServerThread implements Runnable {
 
     NetworkUtility networkUtility;
     EndDevice endDevice;
-    Map<IPAddress,Integer> clientInterfaces;
-    RouterStateChanger routerStateChanger;
+//    Map<IPAddress,Integer> clientInterfaces;
+//    RouterStateChanger routerStateChanger;
 
-    ServerThread(NetworkUtility networkUtility, EndDevice endDevice, Map<IPAddress,Integer> clientInterfaces,RouterStateChanger routerStateChanger) {
+    ServerThread(NetworkUtility networkUtility, EndDevice endDevice){//, Map<IPAddress,Integer> clientInterfaces,RouterStateChanger routerStateChanger) {
 
         this.networkUtility = networkUtility;
         this.endDevice = endDevice;
-        this.clientInterfaces = clientInterfaces;
-        this.routerStateChanger = routerStateChanger;
+//        this.clientInterfaces = clientInterfaces;
+//        this.routerStateChanger = routerStateChanger;
 
         System.out.println("Server Ready for client " + NetworkLayerServer.clientCount);
         NetworkLayerServer.clientCount++;
@@ -31,7 +31,7 @@ public class ServerThread implements Runnable {
 
         ArrayList sendToClient = new ArrayList<>();
         sendToClient.add(this.endDevice);
-        sendToClient.add(this.clientInterfaces);
+        sendToClient.add(NetworkLayerServer.clientInterfaces);
 
         this.networkUtility.write(sendToClient);
     }
@@ -58,12 +58,15 @@ public class ServerThread implements Runnable {
             for (int i=0;i<10;i++){
                p =  readFromClient();
                if (p!=null){
+
                    delivered = deliverPacket(p);
-                   if (delivered){
-                       this.networkUtility.write("Packer Delivered");
+
+                   if (!delivered){
+
+                       this.networkUtility.write("Packet not Delivered");
                    }
-                   else {
-                       this.networkUtility.write("Packet Not Delivered");
+                    else{
+                        this.networkUtility.write("Packet Delivered");
                    }
                }
 
@@ -115,7 +118,7 @@ public class ServerThread implements Runnable {
                 such that the interface and destination end device have same network address.
         */
         int destination = Integer.parseInt(p.getDestinationIP().toString().split("\\.")[2]);
-        System.out.println("Distance from source to Destination: "+NetworkLayerServer.routerMap.get(source).getRoutingTable().get(destination-1).getDistance());
+//        System.out.println("Distance from source to Destination: "+NetworkLayerServer.routerMap.get(source).getRoutingTable().get(destination-1).getDistance());
         /*
         3. Implement forwarding, i.e., s forwards to its gateway router x considering d as the destination.
 
@@ -139,15 +142,15 @@ public class ServerThread implements Runnable {
         4. If 3(a) occurs at any stage, packet will be dropped,
             otherwise successfully sent to the destination router
         */
-//        RouterStateChanger.islocked = true;
+
         boolean delivered = true;
         int currentRouter = source;
         double hop = 0;
-//        boolean checkPathAvailable = true;
+
         ArrayList<Integer> routerList = new ArrayList<>();
 
         while (currentRouter != destination){
-            System.out.println("Current Router : "+currentRouter);
+//            System.out.println("Current Router : "+currentRouter);
             double distanceSourceFromDestination = NetworkLayerServer.routerMap.get(currentRouter).getRoutingTable().get(destination-1).getDistance();
             if (distanceSourceFromDestination == Constants.INFINITY) {
                 System.out.println("path not available");
@@ -171,22 +174,35 @@ public class ServerThread implements Runnable {
             hop += NetworkLayerServer.routerMap.get(currentRouter).getRoutingTable().get(gatewayRouterId-1).getDistance();
 
             routerList.add(currentRouter);
-
+//            this.networkUtility.write(currentRouter);
             if (!NetworkLayerServer.routerMap.get(currentRouter).getState()){
                 NetworkLayerServer.routerMap.get(gatewayRouterId).getRoutingTable().get(currentRouter-1).setDistance(1);
                 RouterStateChanger.islocked = true;
                 NetworkLayerServer.DVR(gatewayRouterId);
                 RouterStateChanger.islocked = false;
             }
-            NetworkLayerServer.routerMap.get(currentRouter).printRoutingTable();
+
+//            NetworkLayerServer.routerMap.get(currentRouter).printRoutingTable();
             currentRouter = gatewayRouterId;
 
 
         }
 //        findDistance(source,destination);
 //        NetworkLayerServer.printRoutingTable();
-        System.out.println("Total hop :"+ hop);
+//        System.out.println("Total hop :"+ hop);
         p.setHopcount((int) hop);
+
+        if (delivered){
+//            this.networkUtility.write("Packet Delivered");
+            System.out.println("Total Hop : "+ hop);
+            for(int i:routerList){
+//                this.networkUtility.write("Router : "+i+"\n");
+//                System.out.println("Router :"+i);
+//                System.out.println(NetworkLayerServer.routerMap.get(i).);
+                NetworkLayerServer.routerMap.get(i).printRoutingTable();
+            }
+//            this.networkUtility.write(NetworkLayerServer.routerMap);
+        }
 
         return delivered;
     }

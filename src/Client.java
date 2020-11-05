@@ -44,6 +44,7 @@ public class Client {
 
             if (activeClientList.size()==0) {
                 System.out.println("No active recipient");
+
                 Map<String,IPAddress> sendMessage = new HashMap<>();
                 sendMessage.put(null,null);
                 networkUtility.write(sendMessage);
@@ -59,7 +60,10 @@ public class Client {
             networkUtility.write(sendMessage);
 
             Thread.sleep(200);
-            System.out.println((String)networkUtility.read());
+
+            System.out.println(networkUtility.read());
+//            ArrayList list = (ArrayList) networkUtility.read();
+
         }
 
         /*
