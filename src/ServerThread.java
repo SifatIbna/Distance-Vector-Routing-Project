@@ -149,59 +149,60 @@ public class ServerThread implements Runnable {
 
         ArrayList<Integer> routerList = new ArrayList<>();
 
-        while (currentRouter != destination){
+        if(NetworkLayerServer.routerMap.get(currentRouter).getState()) {
+
+            while (currentRouter != destination) {
 //            System.out.println("Current Router : "+currentRouter);
-            double distanceSourceFromDestination = NetworkLayerServer.routerMap.get(currentRouter).getRoutingTable().get(destination-1).getDistance();
-            if (distanceSourceFromDestination == Constants.INFINITY) {
-                System.out.println("path not available");
-                delivered = false;
-                break;
-            }
+                double distanceSourceFromDestination = NetworkLayerServer.routerMap.get(currentRouter).getRoutingTable().get(destination - 1).getDistance();
+                if (distanceSourceFromDestination == Constants.INFINITY) {
+                    System.out.println("path not available");
+                    delivered = false;
+                    break;
+                }
 
-            int gatewayRouterId = NetworkLayerServer.routerMap.get(currentRouter).getRoutingTable().get(destination-1).getGatewayRouterId();
-            boolean gateWayRouterState = NetworkLayerServer.routerMap.get(gatewayRouterId).getState();
+                int gatewayRouterId = NetworkLayerServer.routerMap.get(currentRouter).getRoutingTable().get(destination - 1).getGatewayRouterId();
+                boolean gateWayRouterState = NetworkLayerServer.routerMap.get(gatewayRouterId).getState();
 
-            if (!gateWayRouterState){
-                System.out.println("Packet Dropped!");
-                NetworkLayerServer.routerMap.get(currentRouter).getRoutingTable().get(gatewayRouterId-1).setDistance(Constants.INFINITY);
-                RouterStateChanger.islocked = true;
-                NetworkLayerServer.DVR(gatewayRouterId);
-                RouterStateChanger.islocked = false;
-                delivered = false;
-                break;
-            }
+                if (!gateWayRouterState) {
+                    System.out.println("Packet Dropped!");
+                    NetworkLayerServer.routerMap.get(currentRouter).getRoutingTable().get(gatewayRouterId - 1).setDistance(Constants.INFINITY);
+                    RouterStateChanger.islocked = true;
+                    NetworkLayerServer.DVR(gatewayRouterId);
+                    RouterStateChanger.islocked = false;
+                    delivered = false;
+                    break;
+                }
 
-            hop += NetworkLayerServer.routerMap.get(currentRouter).getRoutingTable().get(gatewayRouterId-1).getDistance();
+                hop += NetworkLayerServer.routerMap.get(currentRouter).getRoutingTable().get(gatewayRouterId - 1).getDistance();
 
-            routerList.add(currentRouter);
+                routerList.add(currentRouter);
 //            this.networkUtility.write(currentRouter);
-            if (!NetworkLayerServer.routerMap.get(currentRouter).getState()){
-                NetworkLayerServer.routerMap.get(gatewayRouterId).getRoutingTable().get(currentRouter-1).setDistance(1);
-                RouterStateChanger.islocked = true;
-                NetworkLayerServer.DVR(gatewayRouterId);
-                RouterStateChanger.islocked = false;
-            }
+                if (!NetworkLayerServer.routerMap.get(currentRouter).getState()) {
+                    NetworkLayerServer.routerMap.get(gatewayRouterId).getRoutingTable().get(currentRouter - 1).setDistance(1);
+                    RouterStateChanger.islocked = true;
+                    NetworkLayerServer.DVR(gatewayRouterId);
+                    RouterStateChanger.islocked = false;
+                }
 
 //            NetworkLayerServer.routerMap.get(currentRouter).printRoutingTable();
-            currentRouter = gatewayRouterId;
+                currentRouter = gatewayRouterId;
 
 
+            }
+
+            p.setHopcount((int) hop);
         }
-//        findDistance(source,destination);
-//        NetworkLayerServer.printRoutingTable();
-//        System.out.println("Total hop :"+ hop);
-        p.setHopcount((int) hop);
+
+        else {
+            delivered = false;
+        }
 
         if (delivered){
 //            this.networkUtility.write("Packet Delivered");
             System.out.println("Total Hop : "+ hop);
             for(int i:routerList){
-//                this.networkUtility.write("Router : "+i+"\n");
-//                System.out.println("Router :"+i);
-//                System.out.println(NetworkLayerServer.routerMap.get(i).);
                 NetworkLayerServer.routerMap.get(i).printRoutingTable();
             }
-//            this.networkUtility.write(NetworkLayerServer.routerMap);
         }
 
         return delivered;

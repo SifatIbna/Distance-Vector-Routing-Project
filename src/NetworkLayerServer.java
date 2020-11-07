@@ -1,3 +1,5 @@
+
+
 import sun.nio.cs.ext.MacArabic;
 
 import java.io.File;
@@ -41,16 +43,15 @@ public class NetworkLayerServer {
         System.out.println("Creating router topology");
 
         readTopology();
-//        System.out.println(interfacetoRouterID);
-//        System.out.println(clientInterfaces);
+
         initRoutingTables(); //Initialize routing tables for all routers
-//        System.out.println("Router MAp size : "+routerMap.size());
+
 //        printRoutingTable();
         DVR(1); //Update routing table using distance vector routing until convergence
 //        printRoutingTable();
 //        clearRoutingTable();
 //        printRoutingTable();
-        simpleDVR(1);
+//        simpleDVR(1);
 //        printRoutingTable();
         stateChanger = new RouterStateChanger();//Starts a new thread which turns on/off routers randomly depending on parameter Constants.LAMBDA
 
@@ -62,7 +63,7 @@ public class NetworkLayerServer {
                 clientCount++;
                 endDevices.add(endDevice);
                 endDeviceMap.put(endDevice.getIpAddress(),endDevice);
-                new ServerThread(new NetworkUtility(socket), endDevice,clientInterfaces,stateChanger);
+                new ServerThread(new NetworkUtility(socket), endDevice);//,clientInterfaces,stateChanger);
             } catch (IOException ex) {
                 Logger.getLogger(NetworkLayerServer.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -92,7 +93,7 @@ public class NetworkLayerServer {
 
     public static synchronized void DVR(int startingRouterId){//,Map<Integer, Router> routerMap) {
 
-        lock.lock();
+
         /**
          * pseudocode
          */
@@ -111,21 +112,18 @@ public class NetworkLayerServer {
         }
         */
 
-        int id;
         boolean convergence = true;
         ArrayList<Integer> neighbourRouter;
 
         while(convergence){
 
             for(int i = startingRouterId;i<=routerMap.size();i++){
-//            while (true){
-//                id = (Integer)i;
+
                 Router router = (Router)routerMap.get(i);
                 neighbourRouter = router.getNeighborRouterIDs();
                 for (int routerId : neighbourRouter){
 
                     if (routerId == i) {
-//                        startingRouterId = (startingRouterId%routerMap.size())+1;
                         continue;
                     }
 
@@ -139,11 +137,11 @@ public class NetworkLayerServer {
 
             }
         }
-        lock.unlock();
+
     }
 
     public static synchronized void simpleDVR(int startingRouterId) {
-        lock.lock();
+
         int id;
         boolean convergence = true;
         ArrayList<Integer> neighbourRouter;
@@ -157,10 +155,7 @@ public class NetworkLayerServer {
 
                 for (int routerId : neighbourRouter){
                     if (routerId == id) continue;
-//                    else if(!routerMap.get(routerId).getState()){
-//                        //**//Do something
-//                        routerMap.get(routerId).clearRoutingTable();
-//                    }
+
                     if(routerMap.get(routerId).getState()){
                         convergence = routerMap.get(routerId).updateRoutingTable(router);
                     }
@@ -168,7 +163,7 @@ public class NetworkLayerServer {
                 }
             }
         }
-        lock.unlock();
+
     }
 
     public static EndDevice getClientDeviceSetup() {
@@ -281,3 +276,4 @@ public class NetworkLayerServer {
     }
 
 }
+
