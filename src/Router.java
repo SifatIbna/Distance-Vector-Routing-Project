@@ -179,23 +179,6 @@ public class Router {
         ArrayList<Integer> neighborIds = neighbor.getNeighborRouterIDs();
         ArrayList<RoutingTableEntry> gateWayRoutingTable = neighbor.getRoutingTable();
 
-//        for(int desRouterId:neighborIds){
-//            if (desRouterId == this.routerId) continue;
-//            double sourceToDestination = this.routingTable.get(desRouterId-1).getDistance();
-//            double gateWayToDestination = gateWayRoutingTable.get(desRouterId-1).getDistance();
-//            double sourceToGateWay = this.routingTable.get(neighbor.getRouterId()-1).getDistance();
-//
-//            tempDistance = sourceToGateWay+gateWayToDestination;
-//            System.out.println("temp distance: "+tempDistance);
-//            System.out.println("sourceToDes: "+sourceToDestination);
-//            if((this.routingTable.get(desRouterId-1).getGatewayRouterId() == getWayId) || (sourceToDestination> tempDistance && (sourceId != gateWayRoutingTable.get(desRouterId-1).getGatewayRouterId()))){
-//                this.routingTable.get(desRouterId-1).setDistance(tempDistance);
-//                this.routingTable.get(desRouterId-1).setGatewayRouterId(getWayId);
-//                change = true;
-//            }
-//
-//        }
-
         for (RoutingTableEntry destinationRouter : gateWayRoutingTable){
 
             int destinationRouterId = destinationRouter.getRouterId();
